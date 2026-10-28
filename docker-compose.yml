@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  invoxa-db:
+    image: postgres:16-alpine
+    container_name: invoxa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: invoxa_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./backend/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+
+  invoxa-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: invoxa-backend
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=invoxa-db;Port=5432;Database=invoxa_db;Username=postgres;Password=postgrespassword
+      - Jwt__Secret=InvoxaEnterpriseSuperSecretKey2026SecureJwtTokenGenerator!
+    ports:
+      - "5000:8080"
+    depends_on:
+      - invoxa-db
+
+volumes:
+  postgres_data:
