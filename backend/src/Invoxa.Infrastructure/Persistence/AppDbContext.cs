@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Invoxa.Application.Common.Interfaces;
 using Invoxa.Domain.Common;
 using Invoxa.Domain.Entities;
@@ -45,6 +46,32 @@ public class AppDbContext : DbContext, IApplicationDbContext
             property.SetScale(4);
         }
 
+        // Global DateTime UTC Value Converter for PostgreSQL timestamp with time zone compatibility
+        var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+            v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+        );
+
+        var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+            v => !v.HasValue ? v : (v.Value.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v.Value, DateTimeKind.Utc)),
+            v => !v.HasValue ? v : DateTime.SpecifyKind(v.Value, DateTimeKind.Utc)
+        );
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime))
+                {
+                    property.SetValueConverter(dateTimeConverter);
+                }
+                else if (property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(nullableDateTimeConverter);
+                }
+            }
+        }
+
         // Entity Configurations & Unique Constraints
         modelBuilder.Entity<Tenant>(entity =>
         {
@@ -80,6 +107,10 @@ public class AppDbContext : DbContext, IApplicationDbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.InvoiceNo).IsRequired().HasMaxLength(50);
             entity.HasIndex(e => new { e.TenantId, e.InvoiceNo }).IsUnique();
+            entity.HasOne(e => e.SourceQuotation)
+                  .WithOne(q => q.ConvertedToInvoice)
+                  .HasForeignKey<Invoice>(e => e.QuotationId)
+                  .OnDelete(DeleteBehavior.SetNull);
             entity.HasMany(e => e.Items).WithOne(i => i.Invoice).HasForeignKey(i => i.InvoiceId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(e => e.Payments).WithOne(p => p.Invoice).HasForeignKey(p => p.InvoiceId).OnDelete(DeleteBehavior.Cascade);
         });

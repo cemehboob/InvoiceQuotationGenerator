@@ -12,15 +12,27 @@ import {
   MenuItem,
   CircularProgress,
   Divider,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Link,
 } from '@mui/material';
+import { Settings as SettingsIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl, setApiBaseUrl, resetApiBaseUrl, isNativePlatform } from '../utils/platform';
 
 export const Login = () => {
   const [tab, setTab] = useState(0);
   const [error, setError] = useState('');
   const { login, register, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Server URL settings dialog for Mobile / Custom Deployments
+  const [serverModalOpen, setServerModalOpen] = useState(false);
+  const [customApiUrl, setCustomApiUrl] = useState(getApiBaseUrl());
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
@@ -231,8 +243,67 @@ export const Login = () => {
               </Button>
             </form>
           )}
+
+          <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="caption" color="text.secondary">
+              Deployment: {isNativePlatform() ? 'Native Mobile App' : 'Cloud Web'}
+            </Typography>
+            <Link
+              component="button"
+              variant="caption"
+              onClick={() => {
+                setCustomApiUrl(getApiBaseUrl());
+                setServerModalOpen(true);
+              }}
+              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}
+            >
+              <SettingsIcon sx={{ fontSize: 14 }} />
+              API Server
+            </Link>
+          </Box>
         </CardContent>
       </Card>
+
+      {/* Server Endpoint Settings Modal for Mobile / Self-Hosted */}
+      <Dialog open={serverModalOpen} onClose={() => setServerModalOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>API Server Settings</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Configure the backend API server URL. On Android Emulators, use <code>http://10.0.2.2:5000/api</code>. For production, specify your hosted domain (e.g. <code>https://api.yourdomain.com/api</code>).
+          </Typography>
+          <TextField
+            label="API Base URL"
+            fullWidth
+            value={customApiUrl}
+            onChange={(e) => setCustomApiUrl(e.target.value)}
+            placeholder="https://api.invoxa.com/api"
+            size="small"
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button
+            size="small"
+            color="inherit"
+            onClick={() => {
+              resetApiBaseUrl();
+              setCustomApiUrl(getApiBaseUrl());
+              setServerModalOpen(false);
+            }}
+          >
+            Reset Default
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => {
+              setApiBaseUrl(customApiUrl);
+              setServerModalOpen(false);
+            }}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

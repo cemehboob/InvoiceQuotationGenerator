@@ -23,10 +23,10 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> RegisterCompany([FromBody] RegisterCompanyRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.CompanyName) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-            return BadRequest(new { succeeded = false, message = "Company Name, Email and Password are required." });
+        if (string.IsNullOrWhiteSpace(request.CompanyName) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.AdminFullName))
+            return BadRequest(new { succeeded = false, message = "Company Name, Admin Full Name, Email, and Password are required." });
 
-        var existingUser = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
+        var existingUser = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.Trim().ToLower());
         if (existingUser != null)
             return BadRequest(new { succeeded = false, message = "A user with this email address already exists." });
 
@@ -34,12 +34,12 @@ public class AuthController : ControllerBase
         var tenant = new Tenant
         {
             CompanyName = request.CompanyName.Trim(),
-            TradeLicenseOrCr = request.CrNumber,
-            VatNumber = request.VatNumber,
-            Phone = request.Phone,
-            Email = request.Email,
-            CurrencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode) ? "BHD" : request.CurrencyCode.ToUpper(),
-            CurrencyDecimals = request.CurrencyCode?.ToUpper() == "BHD" ? 3 : 2,
+            TradeLicenseOrCr = string.IsNullOrWhiteSpace(request.CrNumber) ? null : request.CrNumber.Trim(),
+            VatNumber = string.IsNullOrWhiteSpace(request.VatNumber) ? null : request.VatNumber.Trim(),
+            Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim(),
+            Email = request.Email.Trim().ToLower(),
+            CurrencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode) ? "BHD" : request.CurrencyCode.Trim().ToUpper(),
+            CurrencyDecimals = request.CurrencyCode?.Trim().ToUpper() == "BHD" ? 3 : 2,
             DefaultVatRate = 10.0m,
             SubscriptionPlan = SubscriptionPlan.Free,
             IsActive = true
@@ -52,8 +52,8 @@ public class AuthController : ControllerBase
         var adminUser = new User
         {
             TenantId = tenant.Id,
-            FullName = request.AdminFullName,
-            Email = request.Email.ToLower(),
+            FullName = request.AdminFullName.Trim(),
+            Email = request.Email.Trim().ToLower(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Role = UserRole.Admin,
             IsActive = true
@@ -77,7 +77,8 @@ public class AuthController : ControllerBase
                 tenant.Id,
                 tenant.CompanyName,
                 tenant.CurrencyCode,
-                tenant.CurrencyDecimals
+                tenant.CurrencyDecimals,
+                tenant.LogoUrl
             )
         });
     }
@@ -117,7 +118,8 @@ public class AuthController : ControllerBase
                 tenant.Id,
                 tenant.CompanyName,
                 tenant.CurrencyCode,
-                tenant.CurrencyDecimals
+                tenant.CurrencyDecimals,
+                tenant.LogoUrl
             )
         });
     }

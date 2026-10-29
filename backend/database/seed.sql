@@ -27,7 +27,7 @@ VALUES (
     '11111111-1111-1111-1111-111111111111',
     'Ahmed Al-Hassan',
     'admin@invoxa.com',
-    '$2a$11$e87j8h3UfOqYFzNvyFwBWehLmsZ4N2r3Yc.3oR9wK1F5n8wHnBqfa',
+    '$2a$11$zwsCYieC7zvrqODR.1d.1OB8JMezkPTC1PXtNGjpWv/bj.DMy8xrS',
     1, -- Admin
     TRUE
 ) ON CONFLICT DO NOTHING;

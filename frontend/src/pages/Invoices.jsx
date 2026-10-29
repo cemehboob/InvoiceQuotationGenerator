@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { downloadOrSharePdf } from '../utils/fileDownloader';
 import {
   Box,
   Card,
@@ -160,13 +161,7 @@ export const Invoices = () => {
   const handleDownloadPdf = async (invoiceId, invoiceNo) => {
     try {
       const res = await invoicesApi.downloadPdf(invoiceId);
-      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Invoice-${invoiceNo}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      await downloadOrSharePdf(res.data, `Invoice-${invoiceNo}.pdf`);
     } catch (err) {
       alert('Failed to generate PDF invoice.');
     }

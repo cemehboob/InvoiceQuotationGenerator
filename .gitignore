@@ -1,0 +1,27 @@
+## Build and SDK outputs
+bin/
+obj/
+dist/
+node_modules/
+
+## OS Files
+.DS_Store
+Thumbs.db
+Library/
+
+## IDE and Editors
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vscode/
+
+## Environment and logs
+*.log
+.env
+.env.local
+.agents/mcp_config.json
+
+credential.helper.txt

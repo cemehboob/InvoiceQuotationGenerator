@@ -11,6 +11,23 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('invoxa_token'));
   const [loading, setLoading] = useState(false);
 
+  const extractErrorMessage = (err, defaultMsg) => {
+    if (err.response?.data?.message) {
+      return err.response.data.message;
+    }
+    if (err.response?.data?.errors) {
+      const messages = Object.values(err.response.data.errors).flat().filter(Boolean);
+      if (messages.length > 0) return messages.join(' ');
+    }
+    if (err.response?.data?.title) {
+      return err.response.data.title;
+    }
+    if (err.message === 'Network Error' || !err.response) {
+      return 'Unable to connect to the backend server. Please make sure the API is running on port 5050.';
+    }
+    return defaultMsg;
+  };
+
   const login = async (email, password) => {
     setLoading(true);
     try {
@@ -24,7 +41,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.message || 'Login failed. Please verify your credentials.',
+        error: extractErrorMessage(err, 'Login failed. Please verify your credentials.'),
       };
     } finally {
       setLoading(false);
@@ -44,10 +61,26 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.message || 'Registration failed. Please check form inputs.',
+        error: extractErrorMessage(err, 'Registration failed. Please check form inputs.'),
       };
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateCompanyLogo = (logoUrl) => {
+    if (user) {
+      const updatedUser = { ...user, logoUrl };
+      setUser(updatedUser);
+      localStorage.setItem('invoxa_user', JSON.stringify(updatedUser));
+    }
+  };
+
+  const updateCompanyInfo = (info) => {
+    if (user) {
+      const updatedUser = { ...user, ...info };
+      setUser(updatedUser);
+      localStorage.setItem('invoxa_user', JSON.stringify(updatedUser));
     }
   };
 
@@ -60,7 +93,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, register, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isAuthenticated: !!token,
+        login,
+        register,
+        logout,
+        updateCompanyLogo,
+        updateCompanyInfo,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

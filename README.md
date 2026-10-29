@@ -79,14 +79,38 @@ Invoxa/
 
 ---
 
-### Option 1: Quickstart with Docker Compose
+### Option 1: Quickstart with Docker Compose (Full-Stack Web + API + DB)
 
-To spin up the PostgreSQL database and backend container simultaneously:
+To spin up the PostgreSQL database, backend API, and frontend web container simultaneously:
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
-The database will automatically initialize using `backend/database/schema.sql` and `backend/database/seed.sql`.
+- Frontend Web App: **`http://localhost`**
+- Backend API Swagger: **`http://localhost:5000/swagger`**
+- Health Check: **`http://localhost:5000/health`**
+- Database automatically initializes using `backend/database/schema.sql` and `backend/database/seed.sql`.
+
+---
+
+### Option 2: Running Mobile Apps (Android & iOS)
+
+The application uses **Capacitor** to deliver native iOS and Android apps from the same unified frontend codebase:
+
+```bash
+cd frontend
+npm install
+
+# Build web assets and sync to native mobile platforms
+npm run cap:sync
+
+# Open in Android Studio (for Google Play / Android build)
+npm run cap:android
+
+# Open in Xcode (for App Store / iOS build on macOS)
+npm run cap:ios
+```
+*See [DEPLOYMENT.md](file:///Users/ejazmehboob/projects/InvoiceQuotationGenerator/DEPLOYMENT.md) for full step-by-step production deployment instructions for Web, Google Play Store (Android), and Apple App Store (iOS).*
 
 ---
 

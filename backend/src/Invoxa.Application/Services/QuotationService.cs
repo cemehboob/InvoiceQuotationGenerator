@@ -76,8 +76,8 @@ public class QuotationService : IQuotationService
         {
             QuotationNo = quotationNo,
             CustomerId = customer.Id,
-            QuotationDate = request.QuotationDate,
-            ExpiryDate = request.ExpiryDate,
+            QuotationDate = request.QuotationDate.Kind == DateTimeKind.Utc ? request.QuotationDate : DateTime.SpecifyKind(request.QuotationDate, DateTimeKind.Utc),
+            ExpiryDate = request.ExpiryDate.Kind == DateTimeKind.Utc ? request.ExpiryDate : DateTime.SpecifyKind(request.ExpiryDate, DateTimeKind.Utc),
             Status = QuotationStatus.Draft,
             TermsAndConditions = request.TermsAndConditions,
             Notes = request.Notes

@@ -80,8 +80,8 @@ public class InvoiceService : IInvoiceService
             InvoiceNo = invoiceNo,
             CustomerId = customer.Id,
             QuotationId = request.QuotationId,
-            InvoiceDate = request.InvoiceDate,
-            DueDate = request.DueDate,
+            InvoiceDate = request.InvoiceDate.Kind == DateTimeKind.Utc ? request.InvoiceDate : DateTime.SpecifyKind(request.InvoiceDate, DateTimeKind.Utc),
+            DueDate = request.DueDate.Kind == DateTimeKind.Utc ? request.DueDate : DateTime.SpecifyKind(request.DueDate, DateTimeKind.Utc),
             Status = InvoiceStatus.Pending,
             TermsAndConditions = request.TermsAndConditions,
             Notes = request.Notes

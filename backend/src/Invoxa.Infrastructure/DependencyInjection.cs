@@ -18,6 +18,8 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>((sp, options) =>
         {
+            options.UseSnakeCaseNamingConvention();
+
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
                 options.UseNpgsql(connectionString, b =>

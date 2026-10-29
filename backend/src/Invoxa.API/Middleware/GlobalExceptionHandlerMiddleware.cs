@@ -33,10 +33,16 @@ public class GlobalExceptionHandlerMiddleware
                 _ => (int)HttpStatusCode.InternalServerError
             };
 
+            var errorMessage = ex.Message;
+            if (ex.InnerException != null && !string.IsNullOrWhiteSpace(ex.InnerException.Message))
+            {
+                errorMessage = $"{ex.Message} ({ex.InnerException.Message})";
+            }
+
             var response = new
             {
                 succeeded = false,
-                message = ex.Message,
+                message = errorMessage,
                 statusCode = context.Response.StatusCode,
                 timestamp = DateTime.UtcNow
             };

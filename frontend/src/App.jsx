@@ -9,6 +9,7 @@ import { Customers } from './pages/Customers';
 import { Quotations } from './pages/Quotations';
 import { Invoices } from './pages/Invoices';
 import { Payments } from './pages/Payments';
+import { CompanySettings } from './pages/CompanySettings';
 import { Login } from './pages/Login';
 
 const ProtectedRoute = ({ children }) => {
@@ -40,6 +41,7 @@ export default function App() {
               <Route path="quotations" element={<Quotations />} />
               <Route path="invoices" element={<Invoices />} />
               <Route path="payments" element={<Payments />} />
+              <Route path="company" element={<CompanySettings />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

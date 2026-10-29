@@ -27,5 +27,6 @@ public record AuthResponse(
     Guid TenantId,
     string CompanyName,
     string CurrencyCode,
-    int CurrencyDecimals
+    int CurrencyDecimals,
+    string? LogoUrl = null
 );

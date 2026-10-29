@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { downloadOrSharePdf } from '../utils/fileDownloader';
 import {
   Box,
   Card,
@@ -147,13 +148,7 @@ export const Quotations = () => {
   const handleDownloadPdf = async (quotationId, quotationNo) => {
     try {
       const res = await quotationsApi.downloadPdf(quotationId);
-      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Quotation-${quotationNo}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      await downloadOrSharePdf(res.data, `Quotation-${quotationNo}.pdf`);
     } catch (err) {
       alert('Failed to generate PDF document.');
     }

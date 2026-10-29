@@ -1,14 +1,16 @@
 import axios from 'axios';
+import { getApiBaseUrl } from '../utils/platform';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to attach JWT Token
+// Dynamically refresh baseURL before every request if changed in mobile settings
 api.interceptors.request.use((config) => {
+  config.baseURL = getApiBaseUrl();
   const token = localStorage.getItem('invoxa_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -69,6 +71,14 @@ export const paymentsApi = {
 
 export const dashboardApi = {
   getMetrics: () => api.get('/dashboard/metrics'),
+};
+
+export const companyApi = {
+  getProfile: () => api.get('/company'),
+  updateProfile: (data) => api.put('/company', data),
+  updateLogo: (logoUrl) => api.post('/company/logo', { logoUrl }),
+  removeLogo: () => api.delete('/company/logo'),
+  getLogs: (params) => api.get('/company/logs', { params }),
 };
 
 export default api;

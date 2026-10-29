@@ -6,15 +6,20 @@ services:
     container_name: invoxa-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: invoxa_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: ${POSTGRES_DB:-invoxa_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./backend/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-invoxa_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   invoxa-api:
     build:
@@ -23,13 +28,32 @@ services:
     container_name: invoxa-backend
     restart: unless-stopped
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=invoxa-db;Port=5432;Database=invoxa_db;Username=postgres;Password=postgrespassword
-      - Jwt__Secret=InvoxaEnterpriseSuperSecretKey2026SecureJwtTokenGenerator!
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ConnectionStrings__DefaultConnection=Host=invoxa-db;Port=5432;Database=${POSTGRES_DB:-invoxa_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgrespassword}
+      - Jwt__Secret=${JWT_SECRET:-InvoxaEnterpriseSuperSecretKey2026SecureJwtTokenGenerator!}
+      - Jwt__Issuer=${JWT_ISSUER:-InvoxaAPI}
+      - Jwt__Audience=${JWT_AUDIENCE:-InvoxaClient}
+      - Cors__AllowedOrigins__0=http://localhost:5173
+      - Cors__AllowedOrigins__1=http://localhost:3000
+      - Cors__AllowedOrigins__2=http://localhost:80
+      - Cors__AllowedOrigins__3=capacitor://localhost
+      - Cors__AllowedOrigins__4=ionic://localhost
     ports:
       - "5000:8080"
     depends_on:
-      - invoxa-db
+      invoxa-db:
+        condition: service_healthy
+
+  invoxa-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: invoxa-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - invoxa-api
 
 volumes:
   postgres_data:

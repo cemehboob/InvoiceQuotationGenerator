@@ -27,18 +27,7 @@ public class QuestPdfInvoiceGenerator : IPdfGeneratorService
                 // Header
                 page.Header().Row(row =>
                 {
-                    row.RelativeItem().Column(col =>
-                    {
-                        col.Item().Text(tenant.CompanyName).FontSize(20).Bold().FontColor(Colors.Blue.Darken3);
-                        if (!string.IsNullOrWhiteSpace(tenant.TradeLicenseOrCr))
-                            col.Item().Text($"CR / License: {tenant.TradeLicenseOrCr}").FontSize(9);
-                        if (!string.IsNullOrWhiteSpace(tenant.VatNumber))
-                            col.Item().Text($"VAT No: {tenant.VatNumber}").FontSize(9);
-                        if (!string.IsNullOrWhiteSpace(tenant.Email))
-                            col.Item().Text($"Email: {tenant.Email}").FontSize(9);
-                        if (!string.IsNullOrWhiteSpace(tenant.Phone))
-                            col.Item().Text($"Phone: {tenant.Phone}").FontSize(9);
-                    });
+                    row.RelativeItem().Column(col => RenderCompanyHeader(col, tenant, Colors.Blue.Darken3));
 
                     row.ConstantItem(180).Column(col =>
                     {
@@ -200,16 +189,7 @@ public class QuestPdfInvoiceGenerator : IPdfGeneratorService
                 // Header
                 page.Header().Row(row =>
                 {
-                    row.RelativeItem().Column(col =>
-                    {
-                        col.Item().Text(tenant.CompanyName).FontSize(20).Bold().FontColor(Colors.Indigo.Darken3);
-                        if (!string.IsNullOrWhiteSpace(tenant.TradeLicenseOrCr))
-                            col.Item().Text($"CR / License: {tenant.TradeLicenseOrCr}").FontSize(9);
-                        if (!string.IsNullOrWhiteSpace(tenant.Email))
-                            col.Item().Text($"Email: {tenant.Email}").FontSize(9);
-                        if (!string.IsNullOrWhiteSpace(tenant.Phone))
-                            col.Item().Text($"Phone: {tenant.Phone}").FontSize(9);
-                    });
+                    row.RelativeItem().Column(col => RenderCompanyHeader(col, tenant, Colors.Indigo.Darken3));
 
                     row.ConstantItem(180).Column(col =>
                     {
@@ -325,5 +305,48 @@ public class QuestPdfInvoiceGenerator : IPdfGeneratorService
         });
 
         return Task.FromResult(document.GeneratePdf());
+    }
+
+    private static void RenderCompanyHeader(ColumnDescriptor col, Tenant tenant, string primaryColor)
+    {
+        if (!string.IsNullOrWhiteSpace(tenant.LogoUrl))
+        {
+            try
+            {
+                byte[]? logoBytes = null;
+                if (tenant.LogoUrl.StartsWith("data:image", StringComparison.OrdinalIgnoreCase))
+                {
+                    var commaIndex = tenant.LogoUrl.IndexOf(',');
+                    if (commaIndex > 0)
+                    {
+                        var base64 = tenant.LogoUrl[(commaIndex + 1)..];
+                        logoBytes = Convert.FromBase64String(base64);
+                    }
+                }
+                else if (File.Exists(tenant.LogoUrl))
+                {
+                    logoBytes = File.ReadAllBytes(tenant.LogoUrl);
+                }
+
+                if (logoBytes != null && logoBytes.Length > 0)
+                {
+                    col.Item().PaddingBottom(4).MaxHeight(48).MaxWidth(140).Image(logoBytes).FitArea();
+                }
+            }
+            catch
+            {
+                // Fallback to text header cleanly
+            }
+        }
+
+        col.Item().Text(tenant.CompanyName).FontSize(18).Bold().FontColor(primaryColor);
+        if (!string.IsNullOrWhiteSpace(tenant.TradeLicenseOrCr))
+            col.Item().Text($"CR / License: {tenant.TradeLicenseOrCr}").FontSize(9);
+        if (!string.IsNullOrWhiteSpace(tenant.VatNumber))
+            col.Item().Text($"VAT No: {tenant.VatNumber}").FontSize(9);
+        if (!string.IsNullOrWhiteSpace(tenant.Email))
+            col.Item().Text($"Email: {tenant.Email}").FontSize(9);
+        if (!string.IsNullOrWhiteSpace(tenant.Phone))
+            col.Item().Text($"Phone: {tenant.Phone}").FontSize(9);
     }
 }

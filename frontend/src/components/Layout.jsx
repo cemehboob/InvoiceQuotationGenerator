@@ -40,6 +40,7 @@ const NAV_ITEMS = [
   { text: 'Quotations', icon: <QuoteIcon />, path: '/quotations' },
   { text: 'Invoices', icon: <InvoiceIcon />, path: '/invoices' },
   { text: 'Payments', icon: <PaymentIcon />, path: '/payments' },
+  { text: 'Company & Logs', icon: <BusinessIcon />, path: '/company' },
 ];
 
 export const Layout = () => {
@@ -65,28 +66,45 @@ export const Layout = () => {
   };
 
   const drawerContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', pt: { xs: 'var(--sat)', md: 0 }, pb: 'var(--sab)' }}>
       {/* Brand Header */}
       <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box
-          sx={{
-            width: 38,
-            height: 38,
-            borderRadius: 1.5,
-            bgcolor: 'primary.main',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 800,
-            fontSize: '1.2rem',
-          }}
-        >
-          I
-        </Box>
+        {user?.logoUrl ? (
+          <Box
+            component="img"
+            src={user.logoUrl}
+            alt="Logo"
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: 1.5,
+              border: '1px solid #e2e8f0',
+              objectFit: 'contain',
+              bgcolor: 'white',
+              p: 0.5,
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: 1.5,
+              bgcolor: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontWeight: 800,
+              fontSize: '1.2rem',
+            }}
+          >
+            {(user?.companyName || 'I').charAt(0)}
+          </Box>
+        )}
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.dark', lineHeight: 1.2 }}>
-            Invoxa
+            {user?.companyName || 'Invoxa'}
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
             Quote. Invoice. Get Paid.
@@ -95,7 +113,19 @@ export const Layout = () => {
       </Box>
 
       {/* Tenant Indicator */}
-      <Box sx={{ mx: 2, mb: 2, p: 1.5, bgcolor: '#f1f5f9', borderRadius: 2 }}>
+      <Box
+        onClick={() => navigate('/company')}
+        sx={{
+          mx: 2,
+          mb: 2,
+          p: 1.5,
+          bgcolor: '#f1f5f9',
+          borderRadius: 2,
+          cursor: 'pointer',
+          transition: 'all 0.15s ease',
+          '&:hover': { bgcolor: '#e2e8f0' },
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <BusinessIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
           <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -182,6 +212,7 @@ export const Layout = () => {
           bgcolor: 'background.paper',
           borderBottom: '1px solid #e2e8f0',
           color: 'text.primary',
+          pt: { xs: 'var(--sat)', md: 0 },
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -214,6 +245,14 @@ export const Layout = () => {
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
               <MenuItem disabled>{user?.email}</MenuItem>
               <Divider />
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  navigate('/company');
+                }}
+              >
+                Company & Logs
+              </MenuItem>
               <MenuItem onClick={logout}>Sign Out</MenuItem>
             </Menu>
           </Box>
@@ -255,7 +294,8 @@ export const Layout = () => {
           flexGrow: 1,
           p: { xs: 2, sm: 3 },
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          mt: 8,
+          mt: { xs: 'calc(56px + var(--sat))', sm: 'calc(64px + var(--sat))' },
+          pb: 'calc(24px + var(--sab))',
           bgcolor: '#f8fafc',
           minHeight: '100vh',
         }}

@@ -68,7 +68,7 @@ public class PaymentService : IPaymentService
         {
             InvoiceId = invoice.Id,
             Amount = request.Amount,
-            PaymentDate = request.PaymentDate,
+            PaymentDate = request.PaymentDate.Kind == DateTimeKind.Utc ? request.PaymentDate : DateTime.SpecifyKind(request.PaymentDate, DateTimeKind.Utc),
             PaymentMethod = request.PaymentMethod,
             ReferenceNo = request.ReferenceNo,
             Notes = request.Notes
