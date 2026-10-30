@@ -13,7 +13,8 @@
     "cap:android": "npm run build && cap sync android && cap open android",
     "cap:ios": "npm run build && cap sync ios && cap open ios",
     "cap:run:android": "npm run build && cap run android",
-    "cap:run:ios": "npm run build && cap run ios"
+    "cap:run:ios": "npm run build && cap run ios",
+    "test:platforms": "node ../scripts/verify-platforms.cjs"
   },
   "dependencies": {
     "@capacitor/app": "^6.0.2",
